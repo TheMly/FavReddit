@@ -26,7 +26,6 @@ app.engine(
   app.set('views', 'views');
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css'));
 
 // Favorite subreddits
 let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'angular'];
