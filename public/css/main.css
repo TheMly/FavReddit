@@ -1,0 +1,49 @@
+* {
+    margin: 0;
+    padding: 0;
+  }
+
+
+section {
+    padding-top: 100px;
+    box-sizing: unset !important;
+}
+
+section row {
+    box-sizing: unset !important;
+}
+
+.lists-cont {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    list-style-type: none;
+    padding-left:0;
+    flex-wrap: wrap;
+}
+
+.lists-cont h2 {
+    font-weight: 700;
+}
+
+.lists-cont > li {
+    flex: 1 0 33.33333%; /* explanation below */
+}
+
+.sublists-cont {
+    list-style-type: decimal
+
+}
+
+.sublists-cont li {
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+.sublists-cont li a {
+    color: rgb(145, 171, 226)
+}
+
+.top-buffer {
+    padding-top: 50px;
+}
