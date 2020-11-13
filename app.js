@@ -4,10 +4,12 @@ const app = express();
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
+
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', __dirname + '/public/views');
+
 app.set('view engine', 'html');
 app.engine('html', require('ejs').renderFile);
 
@@ -15,6 +17,9 @@ app.engine('html', require('ejs').renderFile);
 let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2'];
 
 // Routes
+
+app.use('/favicon.ico', express.static('images/favicon.ico'));
+
 app.get('/', async(req, res, next) => {
     try {
         res.sendFile('index.html', {root : __dirname + '/public/views'});
@@ -60,7 +65,6 @@ async function getPosts(postsType) {
         const postsArr = [];
         if (responseOK) {
             let data = await response.data;
-            //console.log(data.data.children[0].data);
             for (const post of data.data.children) {
                 if(!post.data.stickied) {
                 let Post = ({title:post.data.title,
