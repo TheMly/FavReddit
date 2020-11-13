@@ -1,76 +1,33 @@
 const express = require('express');
 const path = require('path');
-const https = require('https');
-const axios = require('axios');
-const exphbs = require('express-handlebars');
 const app = express();
 const bodyParser = require('body-parser');
+const axios = require('axios');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.engine(
-    'hbs',
-    exphbs({
-      layoutsDir: 'views/layouts/',
-      defaultLayout: false,
-      extname: 'hbs',
-      helpers: {
-        eachProperty: function(context, options) {
-            var ret = "";
-            for(var prop in context) {
-                ret = ret + options.fn({property:prop,value:context[prop]});
-            }
-            return ret;
-        },
-       json: function(context) {
-        return JSON.stringify(context);
-       }
-      }
-     }
-    )
-    );
-  app.set('view engine', 'hbs');
-  app.set('views', 'views');
-
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', __dirname + '/public/views');
+app.set('view engine', 'html');
+app.engine('html', require('ejs').renderFile);
 
 // Favorite subreddits
-let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2', 'cats'];
+let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2'];
 
 // Routes
-app.get('/searchPostsByType', async(req, res, next) => {
-   console.log('I"m in /searchPostsByType')
-   console.log(req.query.postsType);
-   try {
-    const hotPostsObj = await getHottestPosts(favSubreddits, req.query.postsType);    
-    // console.log(hotPostsObj);
-    let data = {"pageTitle": "Home", "hotPostsObj": hotPostsObj, "postsType": req.query.postsType}
-    res.render('index', (data) );
-    } catch(err) {
-        next(err);
-    }}
-);
-
-app.get('/getPostsType', async(req, res, next) => {
-    console.log('I"m in //')
+app.get('/', async(req, res, next) => {
     try {
-           
-        // console.log(hotPostsObj);
-        let data = {"postsType": 'Hot'};
-        res.send(data);
+        res.sendFile('index.html', {root : __dirname + '/public/views'});
     } catch(err) {
             next(err);
         }}
 );
 
-app.get('/', async(req, res, next) => {
-    console.log('I"m in //')
+app.get('/getPosts', async(req, res, next) => {
     try {
-        // Call reddit API
-        const hotPostsObj = await getHottestPosts(favSubreddits, 'hot');    
-        // console.log(hotPostsObj);
-        let data = {"pageTitle": "Home", "hotPostsObj": hotPostsObj, "postsType": 'Hot'};
-        res.render('index', (data) );
+        console.log(req.query.postsType)
+        let postsObj = await getPosts(req.query.postsType)
+        res.send( {"postsObj": postsObj} );
     } catch(err) {
             next(err);
         }}
@@ -80,15 +37,14 @@ app.use((req, res, next) => {
     res.status(404).render('404', { pageTitle: 'Page Not Found' });
   });
 
-app.listen(3000, () => console.log("Listen on port 3000"));
+app.listen(process.ENV.port || 3000, () => console.log("Listen on port 3000"));
 
-async function getHottestPosts(favSubreddits, postsType) {
-    console.log(getPostsTimeFilter(postsType));
+
+async function getPosts(postsType) {
     var postsObj = {};
     try {
     for (const subreddit of favSubreddits) {
         let url = 'https://www.reddit.com/r/' + subreddit + '/' + getPostsType(postsType) + '.json' + '?limit=10' + getPostsTimeFilter(postsType);
-        console.log(url);
         let options = {
             method: 'GET',
             url: url,
@@ -113,22 +69,21 @@ async function getHottestPosts(favSubreddits, postsType) {
                 postsArr.push(Post);
                 }
             }
-            postsObj[subreddit] = postsArr;    
+            postsObj[subreddit] = postsArr; 
             }
         }
     } catch(err) {
         console.log(err);
     }
     return postsObj;
-}
-
-function getPostsType(postsType) {
+  }
+  
+  function getPostsType(postsType) {
     let x =  postsType.includes('Top') ? 'top' : 'hot';
-    console.log(x);
     return x;
-}
-
-function getPostsTimeFilter(postsType) {
+  }
+  
+  function getPostsTimeFilter(postsType) {
     switch(postsType) {
         case 'Hot': return '';
         case 'Top Past Week': return '&t=week';
@@ -137,4 +92,4 @@ function getPostsTimeFilter(postsType) {
         case 'Top All Time': return '&t=all';
         default: return '';
     }
-}
+  }
