@@ -37,7 +37,8 @@ app.use((req, res, next) => {
     res.status(404).render('404', { pageTitle: 'Page Not Found' });
   });
 
-app.listen(process.env.port || 3000, () => console.log("Listen on port 3000"));
+app.set('port', (process.env.PORT || 3000));
+app.listen(app.get('port'), () => console.log("Listen on port 3000"));
 
 
 async function getPosts(postsType) {

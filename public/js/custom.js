@@ -13,7 +13,8 @@ $(function() {
 async function getPosts(postsType) {
   var postsObj = {};
   try {
-      let url = 'http://localhost:3000/getPosts';
+      let baseUrl = process.env.SERVER_URL || 'http://localhost:3000/getPosts'
+      let url = baseUrl + '/getPosts';
       let options = {
           method: 'GET',
           url: url,
