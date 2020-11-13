@@ -13,8 +13,7 @@ $(function() {
 async function getPosts(postsType) {
   var postsObj = {};
   try {
-      let baseUrl = process.env.SERVER_URL || 'http://localhost:3000/getPosts'
-      let url = baseUrl + '/getPosts';
+      let url = getServerUrl() + '/getPosts';
       let options = {
           method: 'GET',
           url: url,
@@ -62,4 +61,12 @@ function updatePostsView(postsObj) {
 
   // Insert the HTML code into the page
   $('#posts-list').html(html);
+}
+
+function getServerUrl() {
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    return  'http://localhost:3000'; 
+  } else {
+    return 'https://favreddit.herokuapp.com';
+}
 }
