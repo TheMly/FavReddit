@@ -4,6 +4,9 @@ const https = require('https');
 const axios = require('axios');
 const exphbs = require('express-handlebars');
 const app = express();
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.engine(
     'hbs',
@@ -18,9 +21,13 @@ app.engine(
                 ret = ret + options.fn({property:prop,value:context[prop]});
             }
             return ret;
-        }}
+        },
+       json: function(context) {
+        return JSON.stringify(context);
        }
-      )
+      }
+     }
+    )
     );
   app.set('view engine', 'hbs');
   app.set('views', 'views');
@@ -28,86 +35,46 @@ app.engine(
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Favorite subreddits
-let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'angular'];
-
+let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2', 'cats'];
 
 // Routes
-app.get('/', async(req, res, next) => {
-    try {
-
-    // Call reddit API to retrieve 2 top posts of today for each subreddit of the array
-    const hotPostsObj = await (await getHottestPosts(favSubreddits));
-
-    // const hotPostsObj = {
-    //     webdev: [
-    //       {
-    //         title: 'TIL Edge has a 3D View to inspect the z-index and DOM nesting of elements',
-    //         url: 'https://www.reddit.com/gallery/jrim1a',
-    //         img: 'https://a.thumbs.redditmedia.com/-JFqFuknFMBwr_0j83p7Cwjgx0A6j3ghVklP7CA7ed0.jpg'
-    //       },
-    //       {
-    //         title: 'Conditionally call a function with optional chaining',
-    //         url: 'https://i.redd.it/r44ybtnkaby51.png',
-    //         img: 'https://b.thumbs.redditmedia.com/X--HV8i53F7KGMBU2mIxyN0_4OZi-X0bcZOFLaJKjmI.jpg'
-    //       }
-    //     ],
-    //     programming: [
-    //       {
-    //         title: 'Attention Is My Most Valuable Asset for Productivity as a Software Developer',
-    //         url: 'https://zwbetz.com/attention-is-my-most-valuable-asset-for-productivity-as-a-software-developer/',
-    //         img: ''
-    //       },
-    //       {
-    //         title: '.NET 5.0 Released',
-    //         url: 'https://devblogs.microsoft.com/dotnet/announcing-net-5-0/',
-    //         img: ''
-    //       }
-    //     ],
-    //     javascript: [
-    //       {
-    //         title: "Six of JavaScript's Biggest Design Flaws",
-    //         url: 'https://thecarrots.io/blog/javascript-wtf-six-of-the-languages-gravest-design-flaws',
-    //         img: ''
-    //       },
-    //       {
-    //         title: 'How Storybook built component search for speed',
-    //         url: 'https://storybook.js.org/blog/new-component-finder-and-sidebar/?ref=reddit',
-    //         img: ''
-    //       }
-    //     ],
-    //     brawl: [
-    //         {
-    //           title: "Six of JavaScript's Biggest Design Flaws",
-    //           url: 'https://thecarrots.io/blog/javascript-wtf-six-of-the-languages-gravest-design-flaws',
-    //           img: ''
-    //         },
-    //         {
-    //           title: 'How Storybook built component search for speed',
-    //           url: 'https://storybook.js.org/blog/new-component-finder-and-sidebar/?ref=reddit',
-    //           img: ''
-    //         }
-    //       ],
-    //       food: [
-    //         {
-    //           title: "Six of JavaScript's Biggest Design Flaws",
-    //           url: 'https://thecarrots.io/blog/javascript-wtf-six-of-the-languages-gravest-design-flaws',
-    //           img: ''
-    //         },
-    //         {
-    //           title: 'How Storybook built component search for speed',
-    //           url: 'https://storybook.js.org/blog/new-component-finder-and-sidebar/?ref=reddit',
-    //           img: ''
-    //         }
-    //       ]
-    //   };
-
-    console.log(hotPostsObj);
-
-    res.render('index', {"pageTitle": "Home", "hotPostsObj": hotPostsObj});
+app.get('/searchPostsByType', async(req, res, next) => {
+   console.log('I"m in /searchPostsByType')
+   console.log(req.query.postsType);
+   try {
+    const hotPostsObj = await getHottestPosts(favSubreddits, req.query.postsType);    
+    // console.log(hotPostsObj);
+    let data = {"pageTitle": "Home", "hotPostsObj": hotPostsObj, "postsType": req.query.postsType}
+    res.render('index', (data) );
     } catch(err) {
         next(err);
-    }
-});
+    }}
+);
+
+app.get('/getPostsType', async(req, res, next) => {
+    console.log('I"m in //')
+    try {
+           
+        // console.log(hotPostsObj);
+        let data = {"postsType": 'Hot'};
+        res.send(data);
+    } catch(err) {
+            next(err);
+        }}
+);
+
+app.get('/', async(req, res, next) => {
+    console.log('I"m in //')
+    try {
+        // Call reddit API
+        const hotPostsObj = await getHottestPosts(favSubreddits, 'hot');    
+        // console.log(hotPostsObj);
+        let data = {"pageTitle": "Home", "hotPostsObj": hotPostsObj, "postsType": 'Hot'};
+        res.render('index', (data) );
+    } catch(err) {
+            next(err);
+        }}
+);
 
 app.use((req, res, next) => {
     res.status(404).render('404', { pageTitle: 'Page Not Found' });
@@ -115,12 +82,13 @@ app.use((req, res, next) => {
 
 app.listen(3000, () => console.log("Listen on port 3000"));
 
-
- async function getHottestPosts(favSubreddits)  {
+async function getHottestPosts(favSubreddits, postsType) {
+    console.log(getPostsTimeFilter(postsType));
     var postsObj = {};
     try {
     for (const subreddit of favSubreddits) {
-        let url = 'https://www.reddit.com/r/' + subreddit + '/hot.json?limit=10';
+        let url = 'https://www.reddit.com/r/' + subreddit + '/' + getPostsType(postsType) + '.json' + '?limit=10' + getPostsTimeFilter(postsType);
+        console.log(url);
         let options = {
             method: 'GET',
             url: url,
@@ -128,9 +96,7 @@ app.listen(3000, () => console.log("Listen on port 3000"));
                 'Accept': 'application/json',
                 'Content-Type': 'application/json;charset=UTF-8'
             },
-            data: {
-                
-            }
+            data: {}
         };
         let response = await axios(options);
         let responseOK = response && response.status === 200 && response.statusText === 'OK';
@@ -154,4 +120,21 @@ app.listen(3000, () => console.log("Listen on port 3000"));
         console.log(err);
     }
     return postsObj;
+}
+
+function getPostsType(postsType) {
+    let x =  postsType.includes('Top') ? 'top' : 'hot';
+    console.log(x);
+    return x;
+}
+
+function getPostsTimeFilter(postsType) {
+    switch(postsType) {
+        case 'Hot': return '';
+        case 'Top Past Week': return '&t=week';
+        case 'Top Past Month': return '&t=month';
+        case 'Top Past Year': return '&t=year';
+        case 'Top All Time': return '&t=all';
+        default: return '';
+    }
 }

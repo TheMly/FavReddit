@@ -15,6 +15,22 @@
 
   <!-- Custom styles for this template -->
   <link href="/css/main.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+
+  <script src="/js/jquery/jquery.min.js"></script>
+  <script src="/js/bootstrap/bootstrap.bundle.min.js"></script>
+
+  <script src="/js/axios.min.js"></script>
+
+
+  <!-- Plugin JavaScript -->
+  <script src="/js/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom JavaScript for this theme -->
+  <script src="/js/scrolling-nav.js"></script>
+  <script src="/js/dynamic.js"></script>
+
 </head>
 
 <body id="page-top" class="bg-dark text-light">
@@ -38,8 +54,26 @@
     </div>
   </nav>
 
-  <section id="SE-Subreddits">
+  <section>
     <div class="container text-center top-buffer">
+      <form action="/searchPostsByType" method="get">
+          <select name="postsType" id="postsType">
+            <option value="Hot" id="Hot">Hot</option>
+            <option value="Top Past Week" id="Top Past Week">Top Past Week</option>
+            <option value="Top Past Month" id="Top Past Month">Top Past Month</option>
+            <option value="Top Past Year" id="Top Past Year">Top Past Year</option>
+            <option value="Top All Time" id="Top All Time">Top All Time</option>
+          </select>
+          <input type="submit" value="Search">
+      </form>
+    </div>
+  </section>
+
+<!--Your new content will be displayed in here-->
+<div class="content-placeholder"></div>
+
+  <section id="SE-Subreddits">
+    <div class="container text-center">
       <div class="row">
         <div class="col-lg-12 mx-auto">
           <h2>Favorite software engineering subreddits top 10 posts of today</h2>
@@ -50,7 +84,7 @@
                 <ul class="sublists-cont">
                 {{#each this}}
                   <li>
-                    <a href="{{commentsUrl}}" target="_blank"><p class="text-sm-center">{{title}}</p></a>
+                    <a href="{{commentsUrl}}" target="_blank"><p class="text-sm-center">{{{title}}}</p></a>
                 {{/each}}    
                   </li>  
                 </ul>
@@ -73,15 +107,6 @@
     </div>
     <!-- /.container -->
   </footer>
-
-  <script src="/js/jquery/jquery.min.js"></script>
-  <script src="/js/bootstrap/bootstrap.bundle.min.js"></script>
-
-  <!-- Plugin JavaScript -->
-  <script src="/js/jquery-easing/jquery.easing.min.js"></script>
-
-  <!-- Custom JavaScript for this theme -->
-  <script src="/js/scrolling-nav.js"></script>
 
 </body>
 
