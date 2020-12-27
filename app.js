@@ -14,7 +14,7 @@ app.set('view engine', 'html');
 app.engine('html', require('ejs').renderFile);
 
 // Favorite subreddits
-let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2'];
+let favSubreddits = ['webdev', 'programming', 'javascript', 'java', 'Angular2', 'reactjs'];
 
 // Routes
 
@@ -33,6 +33,16 @@ app.get('/getPosts', async(req, res, next) => {
         console.log(req.query.postsType)
         let postsObj = await getPosts(req.query.postsType)
         res.send( {"postsObj": postsObj} );
+    } catch(err) {
+            next(err);
+        }}
+);
+
+app.post('/addSubreddit', async(req, res, next) => {
+    try {
+        console.log(req.query.subredditName);
+        favSubreddits.push(req.query.subredditName);
+        res.send({});
     } catch(err) {
             next(err);
         }}
